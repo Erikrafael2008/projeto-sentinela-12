@@ -14,6 +14,7 @@
       margin-top: 8px;
     }
     .btn-tv:hover { background: #1e7e34; }
+
     .btn-abrir-tv {
       background: #17a2b8;
       color: white;
@@ -24,6 +25,7 @@
       cursor: pointer;
     }
     .btn-abrir-tv:hover { background: #117a8b; }
+
     .consultorio-input {
       display: flex;
       align-items: center;
@@ -34,7 +36,9 @@
       border-radius: 6px;
       border: 1px solid #d0d8f0;
     }
+
     .consultorio-input label { font-weight: bold; }
+
     .consultorio-input input {
       width: 60px;
       text-align: center;
@@ -43,6 +47,35 @@
       padding: 4px 8px;
       border: 1px solid #ccc;
       border-radius: 4px;
+    }
+
+    /* Área de alta do paciente */
+    .alta-paciente {
+      margin-top: 25px;
+      padding: 16px;
+      background: #f0fff4;
+      border: 1px solid #b7e4c7;
+      border-radius: 6px;
+    }
+
+    .alta-paciente h3 {
+      margin-top: 0;
+      color: #218838;
+    }
+
+    .btn-alta {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .btn-alta:hover {
+      background: #bd2130;
     }
   </style>
 </head>
@@ -80,6 +113,18 @@
   <textarea id="obs" placeholder="Observações"></textarea>
 
   <button onclick="salvar()">Salvar</button>
+
+  <!-- Alta do paciente -->
+  <div class="alta-paciente">
+    <h3>🏥 Alta do Paciente</h3>
+    <p style="color:#666; font-size:13px;">
+      Selecione um paciente em "Atender" antes de realizar a alta.
+    </p>
+
+    <button class="btn-alta" onclick="darAltaPaciente()">
+      🏥 Dar Alta ao Paciente
+    </button>
+  </div>
 
 </div>
 
@@ -123,6 +168,7 @@ function carregar() {
 // Função criada para enviar o nome do paciente para a TV quando ele for chamado no consultório.
 function chamarNaTV(nome) {
   const consultorio = document.getElementById("consultorio-num").value || "01";
+
   fetch("/tv/chamar", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -140,6 +186,7 @@ function chamarNaTV(nome) {
 
 function selecionar(index) {
   const t = triagensCarregadas[index];
+
   document.getElementById("paciente").value = t.nome;
   document.getElementById("obs").value = t.observacao || "";
 
@@ -153,7 +200,9 @@ function carregarMedicacoes() {
     .then(r => r.json())
     .then(data => {
       const select = document.getElementById("medicacao");
+
       select.innerHTML = `<option value="">Selecione a medicação</option>`;
+
       data.forEach(med => {
         const option = document.createElement("option");
         option.value = med;
@@ -169,22 +218,86 @@ function salvar() {
   const medicacao = document.getElementById("medicacao").value;
   const obs = document.getElementById("obs").value;
 
-  if (!paciente) { alert("Selecione um paciente clicando em Atender."); return; }
-  if (!medicacao) { alert("Selecione uma medicação."); return; }
+  if (!paciente) {
+    alert("Selecione um paciente clicando em Atender.");
+    return;
+  }
+
+  if (!medicacao) {
+    alert("Selecione uma medicação.");
+    return;
+  }
 
   fetch("/consulta", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ paciente, diagnostico, medicacao, obs })
+    body: JSON.stringify({
+      paciente,
+      diagnostico,
+      medicacao,
+      obs
+    })
   })
   .then(r => r.json())
   .then(() => {
     alert("Consulta salva");
+
     document.getElementById("diagnostico").value = "";
     document.getElementById("medicacao").value = "";
     document.getElementById("obs").value = "";
   });
 }
+
+
+/* =========================================================
+   ALTA DO PACIENTE
+   ========================================================= */
+
+function darAltaPaciente() {
+
+  const paciente = document.getElementById("paciente").value;
+
+  if (!paciente) {
+    alert("⚠️ Selecione um paciente clicando em 'Atender' antes de dar alta.");
+    return;
+  }
+
+  const confirmar = confirm(
+    "Deseja realmente dar alta para o paciente " + paciente + "?"
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  fetch("/alta-paciente", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      paciente: paciente
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+
+    alert("✅ Alta realizada para o paciente " + paciente + "!");
+
+    document.getElementById("paciente").value = "";
+    document.getElementById("diagnostico").value = "";
+    document.getElementById("medicacao").value = "";
+    document.getElementById("obs").value = "";
+
+    carregar();
+
+  })
+  .catch(error => {
+    console.error(error);
+    alert("❌ Não foi possível realizar a alta do paciente.");
+  });
+}
+
 
 carregar();
 carregarMedicacoes();
