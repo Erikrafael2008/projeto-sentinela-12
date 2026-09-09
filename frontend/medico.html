@@ -13,7 +13,10 @@
       font-size: 14px;
       margin-top: 8px;
     }
-    .btn-tv:hover { background: #1e7e34; }
+
+    .btn-tv:hover {
+      background: #1e7e34;
+    }
 
     .btn-abrir-tv {
       background: #17a2b8;
@@ -24,7 +27,10 @@
       font-size: 14px;
       cursor: pointer;
     }
-    .btn-abrir-tv:hover { background: #117a8b; }
+
+    .btn-abrir-tv:hover {
+      background: #117a8b;
+    }
 
     .consultorio-input {
       display: flex;
@@ -37,7 +43,9 @@
       border: 1px solid #d0d8f0;
     }
 
-    .consultorio-input label { font-weight: bold; }
+    .consultorio-input label {
+      font-weight: bold;
+    }
 
     .consultorio-input input {
       width: 60px;
@@ -49,32 +57,19 @@
       border-radius: 4px;
     }
 
-    /* Área de alta do paciente */
-    .alta-paciente {
-      margin-top: 25px;
-      padding: 16px;
-      background: #f0fff4;
-      border: 1px solid #b7e4c7;
-      border-radius: 6px;
-    }
-
-    .alta-paciente h3 {
-      margin-top: 0;
-      color: #218838;
-    }
-
-    .btn-alta {
+    /* Botão para acessar a página de alta */
+    .btn-alta-pagina {
       background: #dc3545;
       color: white;
       border: none;
-      padding: 9px 16px;
+      padding: 10px 18px;
       border-radius: 5px;
       cursor: pointer;
       font-size: 14px;
       font-weight: bold;
     }
 
-    .btn-alta:hover {
+    .btn-alta-pagina:hover {
       background: #bd2130;
     }
   </style>
@@ -87,14 +82,28 @@
   <!-- Cabeçalho com botão da TV -->
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
     <h2 style="margin:0;">🩺 Painel Médico</h2>
-    <button class="btn-abrir-tv" onclick="window.open('tv.html','_blank')">📺 Abrir Tela da TV</button>
+
+    <button
+      class="btn-abrir-tv"
+      onclick="window.open('tv.html','_blank')"
+    >
+      📺 Abrir Tela da TV
+    </button>
   </div>
 
   <!-- Campo criado para informar o consultório e chamar o paciente na TV -->
   <div class="consultorio-input">
     <label>Meu Consultório:</label>
-    <input type="text" id="consultorio-num" value="01">
-    <span style="color:#666; font-size:13px;">Este número será exibido na TV ao chamar o paciente.</span>
+
+    <input
+      type="text"
+      id="consultorio-num"
+      value="01"
+    >
+
+    <span style="color:#666; font-size:13px;">
+      Este número será exibido na TV ao chamar o paciente.
+    </span>
   </div>
 
   <div id="triagens"></div>
@@ -103,204 +112,336 @@
 
   <h3>Consulta</h3>
 
-  <input id="paciente" placeholder="Paciente" readonly>
-  <input id="diagnostico" placeholder="Diagnóstico">
+  <input
+    id="paciente"
+    placeholder="Paciente"
+    readonly
+  >
+
+  <input
+    id="diagnostico"
+    placeholder="Diagnóstico"
+  >
 
   <select id="medicacao">
     <option value="">Selecione a medicação</option>
   </select>
 
-  <textarea id="obs" placeholder="Observações"></textarea>
+  <textarea
+    id="obs"
+    placeholder="Observações"
+  ></textarea>
 
-  <button onclick="salvar()">Salvar</button>
+  <button onclick="salvar()">
+    Salvar
+  </button>
 
-  <!-- Alta do paciente -->
-  <div class="alta-paciente">
-    <h3>🏥 Alta do Paciente</h3>
-    <p style="color:#666; font-size:13px;">
-      Selecione um paciente em "Atender" antes de realizar a alta.
-    </p>
 
-    <button class="btn-alta" onclick="darAltaPaciente()">
-      🏥 Dar Alta ao Paciente
+  <!-- =====================================================
+       BOTÃO PARA PÁGINA DE ALTA
+       ===================================================== -->
+
+  <div style="margin-top:25px; text-align:center;">
+
+    <button
+      class="btn-alta-pagina"
+      onclick="window.location.href='alta.html'"
+    >
+      🏥 Alta do Paciente
     </button>
+
   </div>
 
 </div>
+
 
 <script>
 
 let triagensCarregadas = [];
 
+
 function carregar() {
+
   fetch("/triagens")
+
     .then(r => r.json())
+
     .then(data => {
+
       triagensCarregadas = data;
 
       const div = document.getElementById("triagens");
+
       div.innerHTML = "";
 
+
       if (data.length === 0) {
-        div.innerHTML = "<p style='color:#888; text-align:center;'>Nenhum paciente na fila.</p>";
+
+        div.innerHTML =
+          "<p style='color:#888; text-align:center;'>Nenhum paciente na fila.</p>";
+
         return;
       }
 
+
       data.forEach((t, index) => {
+
         div.innerHTML += `
+
           <div class="card">
+
             <h3>${t.nome}</h3>
-            <p><b>Sintoma:</b> ${t.sintoma || "Não informado"}</p>
-            <p><b>Temperatura:</b> ${t.temperatura || "Não informada"}°C</p>
-            <p><span class="${t.risco}">${t.risco}</span></p>
-            <p><b>Alergia:</b> ${t.alergia || "Nenhuma"}</p>
-            <p><b>Observação:</b> ${t.observacao || "Nenhuma"}</p>
+
+            <p>
+              <b>Sintoma:</b>
+              ${t.sintoma || "Não informado"}
+            </p>
+
+            <p>
+              <b>Temperatura:</b>
+              ${t.temperatura || "Não informada"}°C
+            </p>
+
+            <p>
+              <span class="${t.risco}">
+                ${t.risco}
+              </span>
+            </p>
+
+            <p>
+              <b>Alergia:</b>
+              ${t.alergia || "Nenhuma"}
+            </p>
+
+            <p>
+              <b>Observação:</b>
+              ${t.observacao || "Nenhuma"}
+            </p>
+
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button onclick="selecionar(${index})">Atender</button>
-              <button class="btn-tv" onclick="chamarNaTV('${t.nome}')">📺 Chamar na TV</button>
+
+              <button onclick="selecionar(${index})">
+                Atender
+              </button>
+
+              <button
+                class="btn-tv"
+                onclick="chamarNaTV('${t.nome}')"
+              >
+                📺 Chamar na TV
+              </button>
+
             </div>
+
           </div>
+
         `;
+
       });
+
     });
+
 }
 
-// Função criada para enviar o nome do paciente para a TV quando ele for chamado no consultório.
+
+// Função criada para enviar o nome do paciente
+// para a TV quando ele for chamado no consultório.
 function chamarNaTV(nome) {
-  const consultorio = document.getElementById("consultorio-num").value || "01";
+
+  const consultorio =
+    document.getElementById("consultorio-num").value || "01";
+
 
   fetch("/tv/chamar", {
+
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
     body: JSON.stringify({
+
       localTipo: "CONSULTÓRIO",
+
       localNumero: consultorio,
+
       paciente: nome
+
     })
+
   })
+
   .then(r => r.json())
+
   .then(() => {
-    alert("✅ " + nome + " foi chamado na TV para o Consultório " + consultorio + "!");
+
+    alert(
+      "✅ " +
+      nome +
+      " foi chamado na TV para o Consultório " +
+      consultorio +
+      "!"
+    );
+
   });
+
 }
+
 
 function selecionar(index) {
+
   const t = triagensCarregadas[index];
 
-  document.getElementById("paciente").value = t.nome;
-  document.getElementById("obs").value = t.observacao || "";
 
-  if (t.alergia && t.alergia !== "Nenhuma") {
-    alert("⚠️ Paciente possui alergia: " + t.alergia);
+  document.getElementById("paciente").value =
+    t.nome;
+
+
+  document.getElementById("obs").value =
+    t.observacao || "";
+
+
+  if (
+    t.alergia &&
+    t.alergia !== "Nenhuma"
+  ) {
+
+    alert(
+      "⚠️ Paciente possui alergia: " +
+      t.alergia
+    );
+
   }
+
 }
+
 
 function carregarMedicacoes() {
-  fetch("/lista-medicacoes")
-    .then(r => r.json())
-    .then(data => {
-      const select = document.getElementById("medicacao");
 
-      select.innerHTML = `<option value="">Selecione a medicação</option>`;
+  fetch("/lista-medicacoes")
+
+    .then(r => r.json())
+
+    .then(data => {
+
+      const select =
+        document.getElementById("medicacao");
+
+
+      select.innerHTML =
+        `<option value="">Selecione a medicação</option>`;
+
 
       data.forEach(med => {
-        const option = document.createElement("option");
+
+        const option =
+          document.createElement("option");
+
+
         option.value = med;
+
         option.textContent = med;
+
+
         select.appendChild(option);
+
       });
+
     });
+
 }
 
+
 function salvar() {
-  const paciente = document.getElementById("paciente").value;
-  const diagnostico = document.getElementById("diagnostico").value;
-  const medicacao = document.getElementById("medicacao").value;
-  const obs = document.getElementById("obs").value;
+
+  const paciente =
+    document.getElementById("paciente").value;
+
+
+  const diagnostico =
+    document.getElementById("diagnostico").value;
+
+
+  const medicacao =
+    document.getElementById("medicacao").value;
+
+
+  const obs =
+    document.getElementById("obs").value;
+
 
   if (!paciente) {
-    alert("Selecione um paciente clicando em Atender.");
+
+    alert(
+      "Selecione um paciente clicando em Atender."
+    );
+
     return;
+
   }
+
 
   if (!medicacao) {
-    alert("Selecione uma medicação.");
+
+    alert(
+      "Selecione uma medicação."
+    );
+
     return;
+
   }
 
+
   fetch("/consulta", {
+
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
     body: JSON.stringify({
+
       paciente,
       diagnostico,
       medicacao,
       obs
+
     })
+
   })
+
   .then(r => r.json())
+
   .then(() => {
+
     alert("Consulta salva");
 
-    document.getElementById("diagnostico").value = "";
-    document.getElementById("medicacao").value = "";
-    document.getElementById("obs").value = "";
+
+    document.getElementById(
+      "diagnostico"
+    ).value = "";
+
+
+    document.getElementById(
+      "medicacao"
+    ).value = "";
+
+
+    document.getElementById(
+      "obs"
+    ).value = "";
+
   });
-}
 
-
-/* =========================================================
-   ALTA DO PACIENTE
-   ========================================================= */
-
-function darAltaPaciente() {
-
-  const paciente = document.getElementById("paciente").value;
-
-  if (!paciente) {
-    alert("⚠️ Selecione um paciente clicando em 'Atender' antes de dar alta.");
-    return;
-  }
-
-  const confirmar = confirm(
-    "Deseja realmente dar alta para o paciente " + paciente + "?"
-  );
-
-  if (!confirmar) {
-    return;
-  }
-
-  fetch("/alta-paciente", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      paciente: paciente
-    })
-  })
-  .then(r => r.json())
-  .then(data => {
-
-    alert("✅ Alta realizada para o paciente " + paciente + "!");
-
-    document.getElementById("paciente").value = "";
-    document.getElementById("diagnostico").value = "";
-    document.getElementById("medicacao").value = "";
-    document.getElementById("obs").value = "";
-
-    carregar();
-
-  })
-  .catch(error => {
-    console.error(error);
-    alert("❌ Não foi possível realizar a alta do paciente.");
-  });
 }
 
 
 carregar();
+
 carregarMedicacoes();
+
 
 // Atualiza lista automaticamente a cada 10 segundos
 setInterval(carregar, 10000);
