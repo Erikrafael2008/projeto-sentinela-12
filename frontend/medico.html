@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
   <link rel="stylesheet" href="css/style.css">
+
+  <!-- Biblioteca para gerar PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <style>
+
     .btn-tv {
       background: #28a745;
       color: white;
@@ -57,7 +64,6 @@
       border-radius: 4px;
     }
 
-    /* Botão para acessar a página de alta */
     .btn-alta-pagina {
       background: #dc3545;
       color: white;
@@ -72,16 +78,25 @@
     .btn-alta-pagina:hover {
       background: #bd2130;
     }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <div class="container">
 
-  <!-- Cabeçalho com botão da TV -->
+
+  <!-- Cabeçalho -->
+
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-    <h2 style="margin:0;">🩺 Painel Médico</h2>
+
+    <h2 style="margin:0;">
+      🩺 Painel Médico
+    </h2>
 
     <button
       class="btn-abrir-tv"
@@ -89,11 +104,17 @@
     >
       📺 Abrir Tela da TV
     </button>
+
   </div>
 
-  <!-- Campo criado para informar o consultório e chamar o paciente na TV -->
+
+  <!-- Consultório -->
+
   <div class="consultorio-input">
-    <label>Meu Consultório:</label>
+
+    <label>
+      Meu Consultório:
+    </label>
 
     <input
       type="text"
@@ -102,15 +123,26 @@
     >
 
     <span style="color:#666; font-size:13px;">
+
       Este número será exibido na TV ao chamar o paciente.
+
     </span>
+
   </div>
+
+
+  <!-- Triagens -->
 
   <div id="triagens"></div>
 
+
   <hr>
 
-  <h3>Consulta</h3>
+
+  <h3>
+    Consulta
+  </h3>
+
 
   <input
     id="paciente"
@@ -118,19 +150,27 @@
     readonly
   >
 
+
   <input
     id="diagnostico"
     placeholder="Diagnóstico"
   >
 
+
   <select id="medicacao">
-    <option value="">Selecione a medicação</option>
+
+    <option value="">
+      Selecione a medicação
+    </option>
+
   </select>
+
 
   <textarea
     id="obs"
     placeholder="Observações"
   ></textarea>
+
 
   <button onclick="salvar()">
     Salvar
@@ -138,27 +178,33 @@
 
 
   <!-- =====================================================
-       BOTÃO PARA PÁGINA DE ALTA
+       BOTÃO DE ALTA
        ===================================================== -->
 
   <div style="margin-top:25px; text-align:center;">
 
     <button
       class="btn-alta-pagina"
-      onclick="window.location.href='alta.html'"
+      onclick="darAlta()"
     >
-      🏥 Alta do Paciente
+      🏥 Dar Alta e Gerar PDF
     </button>
 
   </div>
+
 
 </div>
 
 
 <script>
 
+
 let triagensCarregadas = [];
 
+
+// =====================================================
+// CARREGAR TRIAGENS
+// =====================================================
 
 function carregar() {
 
@@ -170,7 +216,8 @@ function carregar() {
 
       triagensCarregadas = data;
 
-      const div = document.getElementById("triagens");
+      const div =
+        document.getElementById("triagens");
 
       div.innerHTML = "";
 
@@ -186,6 +233,14 @@ function carregar() {
 
       data.forEach((t, index) => {
 
+        // Pacientes que já receberam alta
+        // não aparecem novamente na fila médica.
+
+        if (t.status === "alta") {
+          return;
+        }
+
+
         div.innerHTML += `
 
           <div class="card">
@@ -193,42 +248,68 @@ function carregar() {
             <h3>${t.nome}</h3>
 
             <p>
+
               <b>Sintoma:</b>
+
               ${t.sintoma || "Não informado"}
+
             </p>
 
+
             <p>
+
               <b>Temperatura:</b>
+
               ${t.temperatura || "Não informada"}°C
+
             </p>
 
+
             <p>
+
               <span class="${t.risco}">
+
                 ${t.risco}
+
               </span>
+
             </p>
 
+
             <p>
+
               <b>Alergia:</b>
+
               ${t.alergia || "Nenhuma"}
+
             </p>
 
+
             <p>
+
               <b>Observação:</b>
+
               ${t.observacao || "Nenhuma"}
+
             </p>
+
 
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
 
               <button onclick="selecionar(${index})">
+
                 Atender
+
               </button>
+
 
               <button
                 class="btn-tv"
-                onclick="chamarNaTV('${t.nome}')"
+                onclick="chamarNaTV('${String(t.nome).replace(/'/g, "\\'")}')"
               >
+
                 📺 Chamar na TV
+
               </button>
 
             </div>
@@ -239,13 +320,21 @@ function carregar() {
 
       });
 
+    })
+
+    .catch(erro => {
+
+      console.error("Erro ao carregar triagens:", erro);
+
     });
 
 }
 
 
-// Função criada para enviar o nome do paciente
-// para a TV quando ele for chamado no consultório.
+// =====================================================
+// CHAMAR NA TV
+// =====================================================
+
 function chamarNaTV(nome) {
 
   const consultorio =
@@ -257,7 +346,9 @@ function chamarNaTV(nome) {
     method: "POST",
 
     headers: {
+
       "Content-Type": "application/json"
+
     },
 
     body: JSON.stringify({
@@ -284,14 +375,29 @@ function chamarNaTV(nome) {
       "!"
     );
 
+  })
+
+  .catch(erro => {
+
+    console.error(erro);
+
+    alert(
+      "❌ Não foi possível chamar o paciente na TV."
+    );
+
   });
 
 }
 
 
+// =====================================================
+// SELECIONAR PACIENTE
+// =====================================================
+
 function selecionar(index) {
 
-  const t = triagensCarregadas[index];
+  const t =
+    triagensCarregadas[index];
 
 
   document.getElementById("paciente").value =
@@ -316,6 +422,10 @@ function selecionar(index) {
 
 }
 
+
+// =====================================================
+// CARREGAR MEDICAÇÕES
+// =====================================================
 
 function carregarMedicacoes() {
 
@@ -352,6 +462,10 @@ function carregarMedicacoes() {
 
 }
 
+
+// =====================================================
+// SALVAR CONSULTA
+// =====================================================
 
 function salvar() {
 
@@ -398,7 +512,9 @@ function salvar() {
     method: "POST",
 
     headers: {
+
       "Content-Type": "application/json"
+
     },
 
     body: JSON.stringify({
@@ -433,10 +549,498 @@ function salvar() {
       "obs"
     ).value = "";
 
+  })
+
+  .catch(erro => {
+
+    console.error(erro);
+
+    alert(
+      "❌ Erro ao salvar consulta."
+    );
+
   });
 
 }
 
+
+// =====================================================
+// DAR ALTA + GERAR PDF
+// =====================================================
+
+async function darAlta() {
+
+  const paciente =
+    document.getElementById("paciente").value;
+
+
+  const diagnostico =
+    document.getElementById("diagnostico").value;
+
+
+  const medicacao =
+    document.getElementById("medicacao").value;
+
+
+  const obs =
+    document.getElementById("obs").value;
+
+
+  // Verifica paciente
+
+  if (!paciente) {
+
+    alert(
+      "Selecione um paciente clicando em Atender."
+    );
+
+    return;
+
+  }
+
+
+  // Verifica diagnóstico
+
+  if (!diagnostico) {
+
+    alert(
+      "Informe o diagnóstico antes de dar alta."
+    );
+
+    return;
+
+  }
+
+
+  // Verifica medicação
+
+  if (!medicacao) {
+
+    alert(
+      "Selecione uma medicação antes de dar alta."
+    );
+
+    return;
+
+  }
+
+
+  // =====================================================
+  // CONFIRMAÇÃO
+  // =====================================================
+
+  const confirmar = confirm(
+    "Deseja realmente confirmar a alta do paciente " +
+    paciente +
+    "?"
+  );
+
+
+  if (!confirmar) {
+
+    return;
+
+  }
+
+
+  try {
+
+    // ===================================================
+    // ENVIA A ALTA PARA O SERVIDOR
+    // ===================================================
+
+    const resposta =
+      await fetch("/alta", {
+
+        method: "POST",
+
+        headers: {
+
+          "Content-Type": "application/json"
+
+        },
+
+        body: JSON.stringify({
+
+          paciente,
+          diagnostico,
+          medicacao,
+          obs
+
+        })
+
+      });
+
+
+    const resultado =
+      await resposta.json();
+
+
+    if (!resposta.ok) {
+
+      throw new Error(
+        resultado.erro ||
+        "Erro ao realizar alta."
+      );
+
+    }
+
+
+    // ===================================================
+    // GERA PDF
+    // ===================================================
+
+    gerarPDF(
+      paciente,
+      diagnostico,
+      medicacao,
+      obs
+    );
+
+
+    alert(
+      "✅ Alta realizada com sucesso!\n\n" +
+      "O PDF da alta foi gerado."
+    );
+
+
+    // ===================================================
+    // LIMPA O FORMULÁRIO
+    // ===================================================
+
+    document.getElementById(
+      "paciente"
+    ).value = "";
+
+
+    document.getElementById(
+      "diagnostico"
+    ).value = "";
+
+
+    document.getElementById(
+      "medicacao"
+    ).value = "";
+
+
+    document.getElementById(
+      "obs"
+    ).value = "";
+
+
+    // Atualiza a lista
+
+    carregar();
+
+  }
+
+  catch (erro) {
+
+    console.error(
+      "Erro na alta:",
+      erro
+    );
+
+
+    alert(
+      "❌ Não foi possível realizar a alta.\n\n" +
+      erro.message
+    );
+
+  }
+
+}
+
+
+// =====================================================
+// GERAR PDF
+// =====================================================
+
+function gerarPDF(
+  paciente,
+  diagnostico,
+  medicacao,
+  obs
+) {
+
+  const {
+    jsPDF
+  } = window.jspdf;
+
+
+  const doc =
+    new jsPDF();
+
+
+  const agora =
+    new Date();
+
+
+  const data =
+    agora.toLocaleDateString("pt-BR");
+
+
+  const hora =
+    agora.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+
+  // ===================================================
+  // CABEÇALHO
+  // ===================================================
+
+  doc.setFontSize(20);
+
+  doc.setFont(undefined, "bold");
+
+  doc.text(
+    "PROJETO SENTINELA",
+    105,
+    25,
+    {
+      align: "center"
+    }
+  );
+
+
+  doc.setFontSize(15);
+
+  doc.text(
+    "DOCUMENTO DE ALTA MÉDICA",
+    105,
+    35,
+    {
+      align: "center"
+    }
+  );
+
+
+  // Linha
+
+  doc.line(
+    20,
+    42,
+    190,
+    42
+  );
+
+
+  // ===================================================
+  // DADOS
+  // ===================================================
+
+  doc.setFontSize(12);
+
+  doc.setFont(undefined, "bold");
+
+  doc.text(
+    "Paciente:",
+    20,
+    58
+  );
+
+
+  doc.setFont(undefined, "normal");
+
+  doc.text(
+    paciente,
+    55,
+    58
+  );
+
+
+  doc.setFont(undefined, "bold");
+
+  doc.text(
+    "Data:",
+    20,
+    70
+  );
+
+
+  doc.setFont(undefined, "normal");
+
+  doc.text(
+    data,
+    55,
+    70
+  );
+
+
+  doc.setFont(undefined, "bold");
+
+  doc.text(
+    "Horário:",
+    110,
+    70
+  );
+
+
+  doc.setFont(undefined, "normal");
+
+  doc.text(
+    hora,
+    140,
+    70
+  );
+
+
+  // ===================================================
+  // DIAGNÓSTICO
+  // ===================================================
+
+  doc.setFont(undefined, "bold");
+
+  doc.text(
+    "Diagnóstico:",
+    20,
+    88
+  );
+
+
+  doc.setFont(undefined, "normal");
+
+  const diagnosticoLinhas =
+    doc.splitTextToSize(
+      diagnostico || "Não informado",
+      160
+    );
+
+
+  doc.text(
+    diagnosticoLinhas,
+    20,
+    98
+  );
+
+
+  // ===================================================
+  // MEDICAÇÃO
+  // ===================================================
+
+  let posicaoY =
+    98 + (diagnosticoLinhas.length * 7) + 12;
+
+
+  doc.setFont(undefined, "bold");
+
+  doc.text(
+    "Medicação:",
+    20,
+    posicaoY
+  );
+
+
+  doc.setFont(undefined, "normal");
+
+  const medicacaoLinhas =
+    doc.splitTextToSize(
+      medicacao || "Nenhuma",
+      160
+    );
+
+
+  doc.text(
+    medicacaoLinhas,
+    20,
+    posicaoY + 10
+  );
+
+
+  // ===================================================
+  // OBSERVAÇÕES
+  // ===================================================
+
+  posicaoY =
+    posicaoY +
+    10 +
+    (medicacaoLinhas.length * 7) +
+    12;
+
+
+  doc.setFont(undefined, "bold");
+
+  doc.text(
+    "Observações:",
+    20,
+    posicaoY
+  );
+
+
+  doc.setFont(undefined, "normal");
+
+  const obsLinhas =
+    doc.splitTextToSize(
+      obs || "Nenhuma",
+      160
+    );
+
+
+  doc.text(
+    obsLinhas,
+    20,
+    posicaoY + 10
+  );
+
+
+  // ===================================================
+  // RODAPÉ
+  // ===================================================
+
+  doc.line(
+    20,
+    265,
+    190,
+    265
+  );
+
+
+  doc.setFontSize(9);
+
+  doc.text(
+    "Documento gerado pelo Sistema Hospitalar Projeto Sentinela.",
+    105,
+    275,
+    {
+      align: "center"
+    }
+  );
+
+
+  doc.text(
+    "Alta médica registrada no sistema.",
+    105,
+    282,
+    {
+      align: "center"
+    }
+  );
+
+
+  // ===================================================
+  // SALVAR PDF
+  // ===================================================
+
+  const nomeArquivo =
+    "Alta_" +
+    paciente
+      .replace(/[^a-zA-Z0-9À-ÿ ]/g, "")
+      .replace(/\s+/g, "_") +
+    "_" +
+    data.replace(/\//g, "-") +
+    ".pdf";
+
+
+  doc.save(nomeArquivo);
+
+}
+
+
+// =====================================================
+// INICIALIZAÇÃO
+// =====================================================
 
 carregar();
 
@@ -444,9 +1048,15 @@ carregarMedicacoes();
 
 
 // Atualiza lista automaticamente a cada 10 segundos
-setInterval(carregar, 10000);
+
+setInterval(
+  carregar,
+  10000
+);
 
 </script>
 
+
 </body>
+
 </html>
